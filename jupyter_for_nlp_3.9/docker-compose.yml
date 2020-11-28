@@ -1,0 +1,27 @@
+version: '2'
+services:
+    jupyter:
+        build:
+            context: .
+            args:
+                BASE_FOLDER: /opt/jupyter
+                DATA_STORAGE_PATH: /data
+                NLTK_DATA: /data/nltk_data
+                JUPYTER_ROOT_USER: j_user
+                JUPYTER_ROOT_USER_UID: 1000
+                JUPYTER_ROOT_USER_HOME: /home/j_user
+                JUPYTER_USERS_GROUP: j_users
+                JUPYTER_USERS_GROUP_GID: 1004
+        environment:
+            - JUPYTER_HOST_IP=0.0.0.0
+            - DATA_STORAGE_PATH=/data
+            - EXT_BASE_DIR=/data/storage
+
+        volumes:
+            - /data:/data
+
+        ports:
+            - 10088:8888
+
+        command: 'start'
+        restart: always

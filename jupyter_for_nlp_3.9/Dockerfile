@@ -25,8 +25,8 @@ RUN pip3.9 install --no-cache_dir -r ${$BASE_FOLDER}/requirements.txt
 
 #download to $NLTK_DATA
 ARG NLTK_DATA
-RUN mkdir ${NLTK_DATA}
-RUN python3.7 -m nltk.downloader universal_tagset \
+RUN mkdir -p ${NLTK_DATA}
+RUN python3.9 -m nltk.downloader universal_tagset \
     maxent_treebank_pos_tagger \
     stopwords \
     porter_test \
