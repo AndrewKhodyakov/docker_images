@@ -1,4 +1,4 @@
-FROM python:3.9.0-slim-buster
+FROM python:3.8.6-slim-buster
 
 # it installs all for packages building
 RUN apt-get update && apt-get install -y \
@@ -15,18 +15,18 @@ RUN apt-get update && apt-get install -y \
     python-psycopg2
 
 # create base folder
-ARG $BASE_FOLDER
-WORKDIR ${$BASE_FOLDER}
+ARG BASE_FOLDER
+WORKDIR $BASE_FOLDER
 
 # it installs python pakages
 
-COPY requirements.txt ${$BASE_FOLDER}/
-RUN pip3.9 install --no-cache_dir -r ${$BASE_FOLDER}/requirements.txt
+COPY requirements.txt $BASE_FOLDER/
+RUN pip3.8 install --no-cache-dir -r $BASE_FOLDER/requirements.txt
 
 #download to $NLTK_DATA
 ARG NLTK_DATA
-RUN mkdir -p ${NLTK_DATA}
-RUN python3.9 -m nltk.downloader universal_tagset \
+RUN mkdir -p $NLTK_DATA
+RUN python3.8 -m nltk.downloader universal_tagset \
     maxent_treebank_pos_tagger \
     stopwords \
     porter_test \
@@ -52,21 +52,22 @@ RUN useradd -m --uid $JUPYTER_ROOT_USER_UID $JUPYTER_ROOT_USER
 # it adds users from outside of container, it allows to Jupiter 
 # read and write a real users data from mounted volumes
 
-#COPY add_user.sh $BASE_FOLDER
-#RUN $BASE_FOLDER/add_user.sh
+COPY add_user.sh $BASE_FOLDER
+COPY docker-entrypoint.sh $BASE_FOLDER/
+RUN $BASE_FOLDER/add_user.sh
+RUN mkdir -p $DATA_STORAGE_PATH
 
 # it changes users right
 RUN usermod -a -G $JUPYTER_USERS_GROUP $JUPYTER_ROOT_USER
 RUN usermod -g $JUPYTER_USERS_GROUP $JUPYTER_ROOT_USER
 RUN chown -R $JUPYTER_ROOT_USER:$JUPYTER_USERS_GROUP $DATA_STORAGE_PATH
 RUN chown -R $JUPYTER_ROOT_USER:$JUPYTER_USERS_GROUP $JUPYTER_ROOT_USER_HOME
-
-# it deletes unused files
-RUN rm $BASE_FOLDER/add_user.sh
+RUN chown -R $JUPYTER_ROOT_USER:$JUPYTER_USERS_GROUP $BASE_FOLDER
 
 # it starts server
+RUN ls -la ./
+
 USER $JUPYTER_ROOT_USER
 RUN jupyter contrib nbextension install --user && jupyter nbextensions_configurator enable --user
-COPY docker-entrypoint.sh $BASE_FOLDER/
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
